@@ -2,9 +2,9 @@
 
 mkdir build/c -p
 mkdir build/java -p
-mkdir build/python -p
 mkdir data -p
 
+python src/python/GenerateTestData.py 1000 > data/num10000.txt
 python src/python/GenerateTestData.py 10000 > data/num10000.txt
 python src/python/GenerateTestData.py 100000 > data/num100000.txt
 
@@ -29,3 +29,10 @@ echo "Quicksort (Java) (10000 Elements)"
 time java -cp build/java Quicksort < data/num10000.txt > data/out.txt
 echo "Selectionsort (Java) (10000 Elements)"
 time java -cp build/java Selectionsort < data/num10000.txt > data/out.txt
+
+echo "Bubblesort (Python) (10000 Elements)"
+time python src/python/Bubblesort.py < data/num10000.txt > data/out.txt
+echo "Quicksort (Python) (10000 Elements)"
+time python src/python/Quicksort.py < data/num10000.txt > data/out.txt
+echo "Selectionsort (Python) (10000 Elements)"
+time python src/python/Selectionsort.py < data/num10000.txt > data/out.txt
