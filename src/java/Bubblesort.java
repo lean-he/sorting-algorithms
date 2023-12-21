@@ -1,6 +1,6 @@
 /*
     The program expects a python list in a textfile as input.
-    Avg. runtime of Bubblesort: O(n*log(n))
+    Avg. runtime of Bubblesort: O(n²)
 */
 
 import java.util.Arrays;
