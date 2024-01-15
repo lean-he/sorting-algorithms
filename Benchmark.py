@@ -61,7 +61,7 @@ def make_result_plot(results):
     plt.title("Selectionsort")
 
     plt.suptitle("Benchmark of sorting algorithms (" + str(args.n) + " elements in random order)")
-    plt.savefig("result.png")
+    plt.savefig(str(time.time()) + ".png")
     plt.close()
 
 parser = argparse.ArgumentParser(
