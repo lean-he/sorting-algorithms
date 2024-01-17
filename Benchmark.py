@@ -1,5 +1,6 @@
 import argparse
 import ast
+from datetime import datetime
 import matplotlib.pyplot as plt
 import os
 import random
@@ -61,41 +62,47 @@ def make_result_plot(results):
     plt.title("Selectionsort")
 
     plt.suptitle("Benchmark of sorting algorithms (" + str(args.n) + " elements in random order)")
-    plt.savefig("result.png")
+    plt.savefig("result_last.png")
+    plt.savefig("results/result_" + str(datetime.today().strftime("%Y-%m-%d_%H.%M.%S")) + ".png")
     plt.close()
 
-parser = argparse.ArgumentParser(
-    description="Bechmarking tool of sorting algorithms that creates presentable plots.")
-parser.add_argument("--no-compile", action="store_true",
-                    help="no compilation of the source files. For a correct functionality is a compilation on the first execution needed.")
-parser.add_argument("--no-number-gen", action="store_true",
-                    help="no generation of a new data set. The last used one will be used again. On the first execution is a generation however necessary.")
-parser.add_argument("-n", type=int, required=False, default=10000, help="N specifies the size of random elements that get sorted. The default value is 10000.")
-args = parser.parse_args()
+def main():
+    parser = argparse.ArgumentParser(
+        description="Bechmarking tool of sorting algorithms that creates presentable plots.")
+    parser.add_argument("--no-compile", action="store_true",
+                        help="no compilation of the source files. For a correct functionality is a compilation on the first execution needed.")
+    parser.add_argument("--no-number-gen", action="store_true",
+                        help="no generation of a new data set. The last used one will be used again. On the first execution is a generation however necessary.")
+    parser.add_argument("-n", type=int, required=False, default=10000, help="N specifies the size of random elements that get sorted. The default value is 10000.")
+    args = parser.parse_args()
 
-os.makedirs("build/c", exist_ok=True)
-os.makedirs("build/java", exist_ok=True)
-os.makedirs("data", exist_ok=True)
+    os.makedirs("build/c", exist_ok=True)
+    os.makedirs("build/java", exist_ok=True)
+    os.makedirs("data", exist_ok=True)
+    os.makedirs("results", exist_ok=True)
 
-if (not args.no_compile):
-    for i in os.listdir("src/c") + os.listdir("src/java"):
-        compile_code(i)
+    if (not args.no_compile):
+        for i in os.listdir("src/c") + os.listdir("src/java"):
+            compile_code(i)
 
-if (not args.no_number_gen):
-    numbers = generate_data(args.n)
-    f = open("data/numbers.txt", "w")
-    f.write(str(numbers))
-    f.close()
-else:
-    f = open("data/numbers.txt", "r")
-    numbers = ast.literal_eval(f.read())
-    print(numbers)
-    print(type(numbers))
-    print(len(numbers))
-    f.close()
-    args.n = len(numbers)
+    if (not args.no_number_gen):
+        numbers = generate_data(args.n)
+        f = open("data/numbers.txt", "w")
+        f.write(str(numbers))
+        f.close()
+    else:
+        f = open("data/numbers.txt", "r")
+        numbers = ast.literal_eval(f.read())
+        print(numbers)
+        print(type(numbers))
+        print(len(numbers))
+        f.close()
+        args.n = len(numbers)
 
-results = [measure_real_time(run_files[i], str(numbers)) for i in range(len(run_files))]
+    results = [measure_real_time(run_files[i], str(numbers)) for i in range(len(run_files))]
 
-make_result_plot(results)
-print("Done. A benchmark plot was saved in the program directory.")
+    make_result_plot(results)
+    print("Done. A benchmark plot was saved in the program directory.")
+
+if __name__ == "__main__":
+    main()
