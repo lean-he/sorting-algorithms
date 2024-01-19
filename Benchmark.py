@@ -41,7 +41,7 @@ def measure_real_time(file_names, input):
     end_time = time.time()
     return end_time - start_time
 
-def make_result_plot(results):
+def make_result_plot(results, n):
     names = ["C", "Java", "Python"]
     plt.figure(figsize=(15, 5))
 
@@ -61,7 +61,7 @@ def make_result_plot(results):
     plt.ylabel("time (in seconds)")
     plt.title("Selectionsort")
 
-    plt.suptitle("Benchmark of sorting algorithms (" + str(args.n) + " elements in random order)")
+    plt.suptitle("Benchmark of sorting algorithms (" + str(n) + " elements in random order)")
     plt.savefig("result_last.png")
     plt.savefig("results/result_" + str(datetime.today().strftime("%Y-%m-%d_%H.%M.%S")) + ".png")
     plt.close()
@@ -101,7 +101,7 @@ def main():
 
     results = [measure_real_time(run_files[i], str(numbers)) for i in range(len(run_files))]
 
-    make_result_plot(results)
+    make_result_plot(results, args.n)
     print("Done. A benchmark plot was saved in the program directory.")
 
 if __name__ == "__main__":
