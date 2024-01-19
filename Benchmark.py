@@ -13,7 +13,6 @@ run_files = ["Bubblesort", "Bubblesort.class", "Bubblesort.py",
              "Selectionsort", "Selectionsort.class", "Selectionsort.py"]
 
 def compile_code(file_name):
-    print("Compiling " + file_name + "...")
     if (file_name.endswith(".c")):
         subprocess.run(["gcc", "-o", "build/c/" + file_name.replace(".c", ""), "src/c/" + file_name, "-O2", "-Wno-unused-result"])
     elif (file_name.endswith(".java")):
@@ -67,8 +66,8 @@ def make_result_plot(results, n):
 def main():
     parser = argparse.ArgumentParser(
         description="Bechmarking tool of sorting algorithms that creates presentable plots.")
-    parser.add_argument("--no-compile", action="store_true",
-                        help="no compilation of the source files. For a correct functionality is a compilation on the first execution needed.")
+    parser.add_argument("--recompile", action="store_true",
+                        help="in case your executable sorting algorithm files are broken or missing.")
     parser.add_argument("--no-number-gen", action="store_true",
                         help="no generation of a new data set. The last used one will be used again. On the first execution is a generation however necessary.")
     parser.add_argument("-n", type=int, required=False, default=10000, help="N specifies the size of random elements that get sorted. The default value is 10000.")
@@ -79,7 +78,8 @@ def main():
     os.makedirs("data", exist_ok=True)
     os.makedirs("results", exist_ok=True)
 
-    if (not args.no_compile):
+    if (not os.listdir("build/c") or not os.listdir("build/java") or args.recompile):
+        print("Initial start. Compiling needed files...")
         for i in os.listdir("src/c") + os.listdir("src/java"):
             compile_code(i)
 
