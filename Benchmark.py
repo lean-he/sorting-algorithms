@@ -1,6 +1,7 @@
 import argparse
 import ast
 from datetime import datetime
+import statistics
 import matplotlib.pyplot as plt
 import os
 import random
@@ -42,7 +43,7 @@ def measure_real_time(file_names, input):
     end_time = time.time()
     return end_time - start_time
 
-def make_result_plot(results, n):
+def make_result_plot(results, n, k):
     names = ["C", "Java", "Python"]
     plt.figure(figsize=(15, 5))
 
@@ -62,7 +63,10 @@ def make_result_plot(results, n):
     plt.ylabel("time (in seconds)")
     plt.title("Selectionsort")
 
-    plt.suptitle("Benchmark of sorting algorithms (" + str(n) + " elements in random order)")
+    if k > 1:
+        plt.suptitle("Benchmark of sorting algorithms (" + str(n) + " elements in random order), (mean of " + str(k) + " runs)")
+    else:
+        plt.suptitle("Benchmark of sorting algorithms (" + str(n) + " elements in random order)")
     plt.savefig("result_last.png")
     plt.savefig("results/result_" + str(datetime.today().strftime("%Y-%m-%d_%H.%M.%S")) + ".png")
     plt.close()
@@ -74,7 +78,8 @@ def main():
                         help="in case your executable sorting algorithm files are broken or missing.")
     parser.add_argument("--no-number-gen", action="store_true",
                         help="no generation of a new data set. The last used one will be used again. On the first execution is a generation however necessary.")
-    parser.add_argument("-n", type=int, required=False, default=10000, help="N specifies the size of random elements that get sorted. The default value is 10000.")
+    parser.add_argument("-n", type=int, required=False, default=5000, help="N specifies the size of random elements that get sorted. The default value is 10000.")
+    parser.add_argument("-k", type=int, required=False, default=10, help="K specifies the number of algorithm runs. The default value is 1.")
     args = parser.parse_args()
 
     os.makedirs("build/c", exist_ok=True)
@@ -101,20 +106,21 @@ def main():
         f.close()
         args.n = len(numbers)
 
-    for i in tqdm((queue), desc="Total"):
-        if "Bubblesort" in i[1]:
-            bubblesort[i[0]].append(measure_real_time(i[1], str(numbers)))
-        elif "Quicksort" in i[1]:
-            quicksort[i[0]].append(measure_real_time(i[1], str(numbers)))
-        elif "Selectionsort" in i[1]:
-            selectionsort[i[0]].append(measure_real_time(i[1], str(numbers)))
+    for i in tqdm(range(1, args.k+1), desc="Total", colour="green", position=1):
+        for j in tqdm(queue, desc="(" + str(i) + "/" + str(args.k) + ")", ascii=True, position=0):
+            if "Bubblesort" in j[1]:
+                bubblesort[j[0]].append(measure_real_time(j[1], str(numbers)))
+            elif "Quicksort" in j[1]:
+                quicksort[j[0]].append(measure_real_time(j[1], str(numbers)))
+            elif "Selectionsort" in j[1]:
+                selectionsort[j[0]].append(measure_real_time(j[1], str(numbers)))
 
-    results = (bubblesort["c"] + bubblesort["java"] + bubblesort["python"] +
-               quicksort["c"] + quicksort["java"] + quicksort["python"] +
-               selectionsort["c"] + selectionsort["java"] + selectionsort["python"])
+    results = ([statistics.mean(bubblesort["c"])] + [statistics.mean(bubblesort["java"])] + [statistics.mean(bubblesort["python"])] +
+               [statistics.mean(quicksort["c"])] + [statistics.mean(quicksort["java"])] + [statistics.mean(quicksort["python"])] +
+               [statistics.mean(selectionsort["c"])] + [statistics.mean(selectionsort["java"])] + [statistics.mean(selectionsort["python"])])
 
-    make_result_plot(results, args.n)
+    make_result_plot(results, args.n, args.k)
     print("Done. A benchmark plot was saved in the program directory.")
 
 if __name__ == "__main__":
-    main()
+    main() 
