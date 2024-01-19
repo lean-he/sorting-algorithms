@@ -6,6 +6,7 @@ import os
 import random
 import subprocess
 import time
+from tqdm import tqdm
 
 run_files = ["Bubblesort", "Bubblesort.class", "Bubblesort.py",
              "Quicksort", "Quicksort.class", "Quicksort.py",
@@ -26,13 +27,10 @@ def generate_data(n):
 
 def run_code(file_name, input):
     if (file_name.endswith(".class")):
-        print("Running " + file_name + " (Java)...")
         subprocess.run(["java", "-cp", "build/java", file_name], input=input, capture_output=True, text=True)
     elif (file_name.endswith(".py")):
-        print("Running " + file_name + " (Python)...")
         subprocess.run(["python", "src/python/" + file_name], input=input, capture_output=True, text=True)
     else:
-        print("Running " + file_name + " (C)...")
         subprocess.run(["build/c/" + file_name], input=input, capture_output=True, text=True)
 
 def measure_real_time(file_names, input):
@@ -99,7 +97,7 @@ def main():
         f.close()
         args.n = len(numbers)
 
-    results = [measure_real_time(run_files[i], str(numbers)) for i in range(len(run_files))]
+    results = [measure_real_time(run_files[i], str(numbers)) for i in tqdm(range(len(run_files)), desc="Total")]
 
     make_result_plot(results, args.n)
     print("Done. A benchmark plot was saved in the program directory.")
