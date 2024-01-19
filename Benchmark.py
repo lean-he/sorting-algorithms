@@ -8,9 +8,13 @@ import subprocess
 import time
 from tqdm import tqdm
 
-run_files = ["Bubblesort", "Bubblesort.class", "Bubblesort.py",
-             "Quicksort", "Quicksort.class", "Quicksort.py",
-             "Selectionsort", "Selectionsort.class", "Selectionsort.py"]
+queue = [("c", "Bubblesort"), ("java", "Bubblesort.class"), ("python", "Bubblesort.py"),
+        ("c", "Quicksort"), ("java", "Quicksort.class"), ("python", "Quicksort.py"),
+        ("c", "Selectionsort"), ("java", "Selectionsort.class"), ("python", "Selectionsort.py",)]
+
+bubblesort = {"c": [], "java": [], "python": []}
+quicksort = {"c": [], "java": [], "python": []}
+selectionsort = {"c": [], "java": [], "python": []}
 
 def compile_code(file_name):
     if (file_name.endswith(".c")):
@@ -97,7 +101,17 @@ def main():
         f.close()
         args.n = len(numbers)
 
-    results = [measure_real_time(run_files[i], str(numbers)) for i in tqdm(range(len(run_files)), desc="Total")]
+    for i in tqdm((queue), desc="Total"):
+        if "Bubblesort" in i[1]:
+            bubblesort[i[0]].append(measure_real_time(i[1], str(numbers)))
+        elif "Quicksort" in i[1]:
+            quicksort[i[0]].append(measure_real_time(i[1], str(numbers)))
+        elif "Selectionsort" in i[1]:
+            selectionsort[i[0]].append(measure_real_time(i[1], str(numbers)))
+
+    results = (bubblesort["c"] + bubblesort["java"] + bubblesort["python"] +
+               quicksort["c"] + quicksort["java"] + quicksort["python"] +
+               selectionsort["c"] + selectionsort["java"] + selectionsort["python"])
 
     make_result_plot(results, args.n)
     print("Done. A benchmark plot was saved in the program directory.")
