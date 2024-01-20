@@ -10,6 +10,7 @@ Windows, MacOS, and Linux are all supported.
 
 - [Python](https://www.python.org/)
 - [Matplotlib](https://matplotlib.org/)
+- [tqdm](https://tqdm.github.io/)
 - [Java](https://www.java.com/)
 - [GCC](https://gcc.gnu.org/) (optional, if you already own the compiled C code)
 
@@ -19,18 +20,20 @@ Windows, MacOS, and Linux are all supported.
     $ cd sorting-algorithms
     $ python Benchmark.py
 
-A `result.png` image with a benchmark plot will be saved in the program directory.
+A `result_last.png` image with a benchmark plot will be saved in the program directory.
 
 ## Usage
 ### Commands
-    $ python Benchmark.py [-h] [--no-compile] [--no-number-gen] [-n N]
+    $ python Benchmark.py [-h] [--recompile] [--no-number-gen] [-n N] [-k K]
 
-- `--no-compile` : no compilation of the source files. For a correct functionality is a compilation on the first execution needed.
+- `--recompile` : in case your executable sorting algorithm files are broken or missing.
 - `--no-number-gen` : no generation of a new data set. The last used one will be used again. On the first execution is a generation however necessary.
-- `-n N` : N specifies the size of random elements that get sorted. The default value is 10000.
+- `-n N` : N specifies the size of random elements that get sorted. The default value is 5000.
+- `-k K` : K specifies the number of algorithm runs. The default value is 10.
 
 ### Folder structure
 
 - The `src` folder contains the source code of the algorithms, subdivided into the programming languages.
 - The `build` folder contains the binary files after the compilation.
 - In the `data` folder is the data set `numbers.txt` saved.
+- Results of old Benchmark runs get stored in the `results` folder.
