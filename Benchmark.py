@@ -1,6 +1,8 @@
 import argparse
 import ast
+from cpuinfo import get_cpu_info
 from datetime import datetime
+import json
 import matplotlib.pyplot as plt
 import os
 import random
@@ -8,14 +10,6 @@ import statistics
 import subprocess
 import time
 from tqdm import tqdm
-
-queue = [("c", "Bubblesort"), ("java", "Bubblesort.class"), ("python", "Bubblesort.py"),
-        ("c", "Quicksort"), ("java", "Quicksort.class"), ("python", "Quicksort.py"),
-        ("c", "Selectionsort"), ("java", "Selectionsort.class"), ("python", "Selectionsort.py",)]
-
-bubblesort = {"c": [], "java": [], "python": []}
-quicksort = {"c": [], "java": [], "python": []}
-selectionsort = {"c": [], "java": [], "python": []}
 
 def compile_code(file_name):
     if (file_name.endswith(".c")):
@@ -43,22 +37,22 @@ def measure_real_time(file, input):
     end_time = time.time()
     return end_time - start_time
 
-def make_result_plot(results, n, k):
+def make_result_plot(result, n, k, timedate):
     names = ["C", "Java", "Python"]
     plt.figure(figsize=(15, 5))
 
     plt.subplot(131)
-    bars = plt.bar(names, results[:3])
+    bars = plt.bar(names, result[:3])
     plt.bar_label(bars)
     plt.ylabel("time (in seconds)")
     plt.title("Bubblesort")
     plt.subplot(132)
-    bars = plt.bar(names, results[3:6])
+    bars = plt.bar(names, result[3:6])
     plt.bar_label(bars)
     plt.ylabel("time (in seconds)")
     plt.title("Quicksort")
     plt.subplot(133)
-    bars = plt.bar(names, results[6:9])
+    bars = plt.bar(names, result[6:9])
     plt.bar_label(bars)
     plt.ylabel("time (in seconds)")
     plt.title("Selectionsort")
@@ -68,8 +62,12 @@ def make_result_plot(results, n, k):
     else:
         plt.suptitle("Benchmark of sorting algorithms (" + str(n) + " elements in random order)")
     plt.savefig("result_last.png")
-    plt.savefig("results/result_" + str(datetime.today().strftime("%Y-%m-%d_%H.%M.%S")) + ".png")
+    plt.savefig("results/result_" + timedate + ".png")
     plt.close()
+
+def write_result_to_file(result, timedate):
+    with open("results/result_" + timedate + ".json", "w") as f:
+        json.dump(result, f, indent=4)
 
 def main():
     parser = argparse.ArgumentParser(
@@ -81,6 +79,19 @@ def main():
     parser.add_argument("-n", type=int, required=False, default=5000, help="N specifies the size of random elements that get sorted. The default value is 5000.")
     parser.add_argument("-k", type=int, required=False, default=10, help="K specifies the number of algorithm runs. The default value is 10.")
     args = parser.parse_args()
+
+    print("Getting CPU information...")
+
+    queue = [("c", "Bubblesort"), ("java", "Bubblesort.class"), ("python", "Bubblesort.py"),
+             ("c", "Quicksort"), ("java", "Quicksort.class"), ("python", "Quicksort.py"),
+             ("c", "Selectionsort"), ("java", "Selectionsort.class"), ("python", "Selectionsort.py",)]
+
+    result = {"algorithms": {"bubblesort": {"c": [], "java": [], "python": []},
+                             "quicksort": {"c": [], "java": [], "python": []},
+                             "selectionsort": {"c": [], "java": [], "python": []}},
+              "cpuinfo": get_cpu_info()}
+    
+    init_timedate = str(datetime.today().strftime("%Y-%m-%d_%H.%M.%S"))
 
     os.makedirs("build/c", exist_ok=True)
     os.makedirs("build/java", exist_ok=True)
@@ -106,20 +117,29 @@ def main():
         f.close()
         args.n = len(numbers)
 
+    print("Starting the algorithms...")
+
     for i in tqdm(range(1, args.k+1), desc="Total", colour="green", position=1):
         for j in tqdm(queue, desc="(" + str(i) + "/" + str(args.k) + ")", ascii=True, position=0):
             if "Bubblesort" in j[1]:
-                bubblesort[j[0]].append(measure_real_time(j, str(numbers)))
+                result["algorithms"]["bubblesort"][j[0]].append(measure_real_time(j, str(numbers)))
             elif "Quicksort" in j[1]:
-                quicksort[j[0]].append(measure_real_time(j, str(numbers)))
+                result["algorithms"]["quicksort"][j[0]].append(measure_real_time(j, str(numbers)))
             elif "Selectionsort" in j[1]:
-                selectionsort[j[0]].append(measure_real_time(j, str(numbers)))
+                result["algorithms"]["selectionsort"][j[0]].append(measure_real_time(j, str(numbers)))
 
-    results = ([statistics.mean(bubblesort["c"])] + [statistics.mean(bubblesort["java"])] + [statistics.mean(bubblesort["python"])] +
-               [statistics.mean(quicksort["c"])] + [statistics.mean(quicksort["java"])] + [statistics.mean(quicksort["python"])] +
-               [statistics.mean(selectionsort["c"])] + [statistics.mean(selectionsort["java"])] + [statistics.mean(selectionsort["python"])])
+    result_mean = ([statistics.mean(result["algorithms"]["bubblesort"]["c"])] +
+                   [statistics.mean(result["algorithms"]["bubblesort"]["java"])] +
+                   [statistics.mean(result["algorithms"]["bubblesort"]["python"])] +
+                   [statistics.mean(result["algorithms"]["quicksort"]["c"])] +
+                   [statistics.mean(result["algorithms"]["quicksort"]["java"])] +
+                   [statistics.mean(result["algorithms"]["quicksort"]["python"])] +
+                   [statistics.mean(result["algorithms"]["selectionsort"]["c"])] +
+                   [statistics.mean(result["algorithms"]["selectionsort"]["java"])] +
+                   [statistics.mean(result["algorithms"]["selectionsort"]["python"])])
 
-    make_result_plot(results, args.n, args.k)
+    write_result_to_file(result, init_timedate)
+    make_result_plot(result_mean, args.n, args.k, init_timedate)
     tqdm.write("Done. A benchmark plot was saved in the program directory.")
 
 if __name__ == "__main__":

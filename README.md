@@ -10,6 +10,7 @@ Windows, MacOS, and Linux are all supported.
 
 - [Python](https://www.python.org/)
 - [Matplotlib](https://matplotlib.org/)
+- [py-cpuinfo](https://github.com/workhorsy/py-cpuinfo)
 - [tqdm](https://tqdm.github.io/)
 - [Java](https://www.java.com/)
 - [GCC](https://gcc.gnu.org/) (optional, if you already own the compiled C code)
