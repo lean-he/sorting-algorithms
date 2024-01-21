@@ -1,10 +1,10 @@
 import argparse
 import ast
 from datetime import datetime
-import statistics
 import matplotlib.pyplot as plt
 import os
 import random
+import statistics
 import subprocess
 import time
 from tqdm import tqdm
@@ -29,17 +29,17 @@ def generate_data(n):
     random.shuffle(numbers)
     return numbers
 
-def run_code(file_name, input):
-    if (file_name.endswith(".class")):
-        subprocess.run(["java", "-cp", "build/java", file_name], input=input, capture_output=True, text=True)
-    elif (file_name.endswith(".py")):
-        subprocess.run(["python", "src/python/" + file_name], input=input, capture_output=True, text=True)
-    else:
-        subprocess.run(["build/c/" + file_name], input=input, capture_output=True, text=True)
+def run_code(file, input):
+    if file[0] == "java":
+        subprocess.run(["java", "-cp", "build/java", file[1]], input=input, capture_output=True, text=True)
+    elif file[0] == "python":
+        subprocess.run(["python", "src/python/" + file[1]], input=input, capture_output=True, text=True)
+    elif file[0] == "c":
+        subprocess.run(["build/c/" + file[1]], input=input, capture_output=True, text=True)
 
-def measure_real_time(file_names, input):
+def measure_real_time(file, input):
     start_time = time.time()
-    run_code(file_names, input)
+    run_code(file, input)
     end_time = time.time()
     return end_time - start_time
 
@@ -78,8 +78,8 @@ def main():
                         help="in case your executable sorting algorithm files are broken or missing.")
     parser.add_argument("--no-number-gen", action="store_true",
                         help="no generation of a new data set. The last used one will be used again. On the first execution is a generation however necessary.")
-    parser.add_argument("-n", type=int, required=False, default=5000, help="N specifies the size of random elements that get sorted. The default value is 10000.")
-    parser.add_argument("-k", type=int, required=False, default=10, help="K specifies the number of algorithm runs. The default value is 1.")
+    parser.add_argument("-n", type=int, required=False, default=5000, help="N specifies the size of random elements that get sorted. The default value is 5000.")
+    parser.add_argument("-k", type=int, required=False, default=10, help="K specifies the number of algorithm runs. The default value is 10.")
     args = parser.parse_args()
 
     os.makedirs("build/c", exist_ok=True)
@@ -109,18 +109,18 @@ def main():
     for i in tqdm(range(1, args.k+1), desc="Total", colour="green", position=1):
         for j in tqdm(queue, desc="(" + str(i) + "/" + str(args.k) + ")", ascii=True, position=0):
             if "Bubblesort" in j[1]:
-                bubblesort[j[0]].append(measure_real_time(j[1], str(numbers)))
+                bubblesort[j[0]].append(measure_real_time(j, str(numbers)))
             elif "Quicksort" in j[1]:
-                quicksort[j[0]].append(measure_real_time(j[1], str(numbers)))
+                quicksort[j[0]].append(measure_real_time(j, str(numbers)))
             elif "Selectionsort" in j[1]:
-                selectionsort[j[0]].append(measure_real_time(j[1], str(numbers)))
+                selectionsort[j[0]].append(measure_real_time(j, str(numbers)))
 
     results = ([statistics.mean(bubblesort["c"])] + [statistics.mean(bubblesort["java"])] + [statistics.mean(bubblesort["python"])] +
                [statistics.mean(quicksort["c"])] + [statistics.mean(quicksort["java"])] + [statistics.mean(quicksort["python"])] +
                [statistics.mean(selectionsort["c"])] + [statistics.mean(selectionsort["java"])] + [statistics.mean(selectionsort["python"])])
 
     make_result_plot(results, args.n, args.k)
-    print("Done. A benchmark plot was saved in the program directory.")
+    tqdm.write("Done. A benchmark plot was saved in the program directory.")
 
 if __name__ == "__main__":
     main() 
