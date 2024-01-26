@@ -111,9 +111,6 @@ def main():
     else:
         f = open("data/numbers.txt", "r")
         numbers = ast.literal_eval(f.read())
-        print(numbers)
-        print(type(numbers))
-        print(len(numbers))
         f.close()
         args.n = len(numbers)
 

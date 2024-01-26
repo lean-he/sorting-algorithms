@@ -7,7 +7,6 @@ import ast
 
 numbers = input()
 numbers = ast.literal_eval(numbers)
-numbers = [int(i) for i in numbers]
 
 for j in range(len(numbers)-1):
     minIndex = j

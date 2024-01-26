@@ -27,7 +27,6 @@ def divide(l, r):
 
 numbers = input()
 numbers = ast.literal_eval(numbers)
-numbers = [int(i) for i in numbers]
 
 quicksort(0, len(numbers)-1)
 print(numbers)
