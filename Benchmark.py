@@ -80,6 +80,8 @@ def main():
     parser.add_argument("-k", type=int, required=False, default=10, help="K specifies the number of algorithm runs. The default value is 10.")
     args = parser.parse_args()
 
+    start_time = time.time()
+
     print("Getting CPU information...")
 
     queue = [("c", "Bubblesort"), ("java", "Bubblesort.class"), ("python", "Bubblesort.py"),
@@ -135,9 +137,12 @@ def main():
                    [statistics.mean(result["algorithms"]["selectionsort"]["java"])] +
                    [statistics.mean(result["algorithms"]["selectionsort"]["python"])])
 
+    elapsed_time = time.time()
+    runtime = elapsed_time - start_time
+
     write_result_to_file(result, init_timedate)
     make_result_plot(result_mean, args.n, args.k, init_timedate)
-    tqdm.write("Done. A benchmark plot was saved in the program directory.")
+    tqdm.write("Done. It took " + time.strftime("%Mm:%Ss", time.gmtime(runtime)) + ". A benchmark plot was saved in the program directory.")
 
 if __name__ == "__main__":
     main() 
