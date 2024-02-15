@@ -6,7 +6,7 @@ import json
 import matplotlib.pyplot as plt
 import os
 import random
-import statistics
+from statistics import mean
 import subprocess
 import time
 from tqdm import tqdm
@@ -39,20 +39,25 @@ def measure_real_time(file, input):
 
 def make_result_plot(result, n, k, timedate):
     names = ["C", "Java", "Python"]
+    bubblesort = result["algorithms"]["bubblesort"]
+    quicksort = result["algorithms"]["quicksort"]
+    selectionsort = result["algorithms"]["selectionsort"]
+    
     plt.figure(figsize=(15, 5))
-
     plt.subplot(131)
-    bars = plt.bar(names, result[:3])
+    bars = plt.bar(names, [mean(bubblesort["c"]), mean(bubblesort["java"]), mean(bubblesort["python"])])
     plt.bar_label(bars)
     plt.ylabel("time (in seconds)")
     plt.title("Bubblesort")
+    
     plt.subplot(132)
-    bars = plt.bar(names, result[3:6])
+    bars = plt.bar(names, [mean(quicksort["c"]), mean(quicksort["java"]), mean(quicksort["python"])])
     plt.bar_label(bars)
     plt.ylabel("time (in seconds)")
     plt.title("Quicksort")
+    
     plt.subplot(133)
-    bars = plt.bar(names, result[6:9])
+    bars = plt.bar(names, [mean(selectionsort["c"]), mean(selectionsort["java"]), mean(selectionsort["python"])])
     plt.bar_label(bars)
     plt.ylabel("time (in seconds)")
     plt.title("Selectionsort")
@@ -127,21 +132,11 @@ def main():
             elif "Selectionsort" in j[1]:
                 result["algorithms"]["selectionsort"][j[0]].append(measure_real_time(j, str(numbers)))
 
-    result_mean = ([statistics.mean(result["algorithms"]["bubblesort"]["c"])] +
-                   [statistics.mean(result["algorithms"]["bubblesort"]["java"])] +
-                   [statistics.mean(result["algorithms"]["bubblesort"]["python"])] +
-                   [statistics.mean(result["algorithms"]["quicksort"]["c"])] +
-                   [statistics.mean(result["algorithms"]["quicksort"]["java"])] +
-                   [statistics.mean(result["algorithms"]["quicksort"]["python"])] +
-                   [statistics.mean(result["algorithms"]["selectionsort"]["c"])] +
-                   [statistics.mean(result["algorithms"]["selectionsort"]["java"])] +
-                   [statistics.mean(result["algorithms"]["selectionsort"]["python"])])
-
     elapsed_time = time.time()
     runtime = elapsed_time - start_time
 
     write_result_to_file(result, init_timedate)
-    make_result_plot(result_mean, args.n, args.k, init_timedate)
+    make_result_plot(result, args.n, args.k, init_timedate)
     tqdm.write("Done. It took " + time.strftime("%Mm:%Ss", time.gmtime(runtime)) + ". A benchmark plot was saved in the program directory.")
 
 if __name__ == "__main__":
