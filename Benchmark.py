@@ -13,7 +13,8 @@ from tqdm import tqdm
 
 def compile_code(file_name):
     if (file_name.endswith(".c")):
-        subprocess.run(["gcc", "-o", "build/c/" + file_name.replace(".c", ""), "src/c/" + file_name, "-O2", "-Wno-unused-result"])
+        subprocess.run(["gcc", "-o", "build/c/" + file_name.replace(".c", ""),
+                        "src/c/" + file_name, "-O2", "-Wno-unused-result"])
     elif (file_name.endswith(".java")):
         subprocess.run(["javac", "-d", "build/java", "src/java/" + file_name])
 
@@ -24,12 +25,15 @@ def generate_data(n):
     return numbers
 
 def run_code(file, input):
-    if file[0] == "java":
-        subprocess.run(["java", "-cp", "build/java", file[1]], input=input, capture_output=True, text=True)
-    elif file[0] == "python":
-        subprocess.run(["python", "src/python/" + file[1]], input=input, capture_output=True, text=True)
-    elif file[0] == "c":
-        subprocess.run(["build/c/" + file[1]], input=input, capture_output=True, text=True)
+    if file[0] == "Java":
+        subprocess.run(["java", "-cp", "build/java", file[1]], input=input, 
+                       capture_output=True, text=True)
+    elif file[0] == "Python":
+        subprocess.run(["python3", "src/python/" + file[1]], input=input, 
+                       capture_output=True, text=True)
+    elif file[0] == "C":
+        subprocess.run(["build/c/" + file[1]], input=input, 
+                       capture_output=True, text=True)
 
 def measure_real_time(file, input):
     start_time = time.time()
@@ -38,34 +42,27 @@ def measure_real_time(file, input):
     return end_time - start_time
 
 def make_result_plot(result, n, k, timedate):
-    names = ["C", "Java", "Python"]
-    bubblesort = result["algorithms"]["bubblesort"]
-    quicksort = result["algorithms"]["quicksort"]
-    selectionsort = result["algorithms"]["selectionsort"]
-    
-    plt.figure(figsize=(15, 5))
-    plt.subplot(131)
-    bars = plt.bar(names, [mean(bubblesort["c"]), mean(bubblesort["java"]), mean(bubblesort["python"])])
-    plt.bar_label(bars)
-    plt.ylabel("time (in seconds)")
-    plt.title("Bubblesort")
-    
-    plt.subplot(132)
-    bars = plt.bar(names, [mean(quicksort["c"]), mean(quicksort["java"]), mean(quicksort["python"])])
-    plt.bar_label(bars)
-    plt.ylabel("time (in seconds)")
-    plt.title("Quicksort")
-    
-    plt.subplot(133)
-    bars = plt.bar(names, [mean(selectionsort["c"]), mean(selectionsort["java"]), mean(selectionsort["python"])])
-    plt.bar_label(bars)
-    plt.ylabel("time (in seconds)")
-    plt.title("Selectionsort")
-
+    algo_result = result["algorithms"]
+    plt.figure(figsize=(len(algo_result)*5, len(algo_result)*1.6))
     if k > 1:
-        plt.suptitle("Benchmark of sorting algorithms (" + str(n) + " elements in random order), (mean of " + str(k) + " runs)")
+        plt.suptitle("Benchmark of sorting algorithms (" + str(n) +
+                     " elements in random order), (mean of " + str(k) + " runs)")
     else:
-        plt.suptitle("Benchmark of sorting algorithms (" + str(n) + " elements in random order)")
+        plt.suptitle("Benchmark of sorting algorithms (" + str(n) +
+                     " elements in random order)")
+
+    for i, algo in enumerate(algo_result):
+        algo_languages = list(algo_result[algo].keys())
+        algo_values = []
+
+        for j in algo_languages:
+            algo_values.append(mean(algo_result[algo][j]))
+
+        plt.subplot(1, len(algo_result), i+1)
+        plt.title(algo)
+        plt.ylabel("time (in seconds)")
+        plt.bar(algo_languages, algo_values)
+    
     plt.savefig("result_last.png")
     plt.savefig("results/result_" + timedate + ".png")
     plt.close()
@@ -81,21 +78,23 @@ def main():
                         help="in case your executable sorting algorithm files are broken or missing.")
     parser.add_argument("--no-number-gen", action="store_true",
                         help="no generation of a new data set. The last used one will be used again. On the first execution is a generation however necessary.")
-    parser.add_argument("-n", type=int, required=False, default=5000, help="N specifies the size of random elements that get sorted. The default value is 5000.")
-    parser.add_argument("-k", type=int, required=False, default=10, help="K specifies the number of algorithm runs. The default value is 10.")
+    parser.add_argument("-n", type=int, required=False, default=5000,
+                        help="N specifies the size of random elements that get sorted. The default value is 5000.")
+    parser.add_argument("-k", type=int, required=False, default=10,
+                        help="K specifies the number of algorithm runs. The default value is 10.")
     args = parser.parse_args()
 
     start_time = time.time()
 
     print("Getting CPU information...")
 
-    queue = [("c", "Bubblesort"), ("java", "Bubblesort.class"), ("python", "Bubblesort.py"),
-             ("c", "Quicksort"), ("java", "Quicksort.class"), ("python", "Quicksort.py"),
-             ("c", "Selectionsort"), ("java", "Selectionsort.class"), ("python", "Selectionsort.py",)]
+    queue = [("C", "Bubblesort"), ("Java", "Bubblesort.class"), ("Python", "Bubblesort.py"),
+             ("C", "Quicksort"), ("Java", "Quicksort.class"), ("Python", "Quicksort.py"),
+             ("C", "Selectionsort"), ("Java", "Selectionsort.class"), ("Python", "Selectionsort.py",)]
 
-    result = {"algorithms": {"bubblesort": {"c": [], "java": [], "python": []},
-                             "quicksort": {"c": [], "java": [], "python": []},
-                             "selectionsort": {"c": [], "java": [], "python": []}},
+    result = {"algorithms": {"Bubble sort": {"C": [], "Java": [], "Python": []},
+                             "Quicksort": {"C": [], "Java": [], "Python": []},
+                             "Selection sort": {"C": [], "Java": [], "Python": []}},
               "cpuinfo": get_cpu_info()}
     
     init_timedate = str(datetime.today().strftime("%Y-%m-%d_%H.%M.%S"))
@@ -126,18 +125,19 @@ def main():
     for i in tqdm(range(1, args.k+1), desc="Total", colour="green", position=1):
         for j in tqdm(queue, desc="(" + str(i) + "/" + str(args.k) + ")", ascii=True, position=0):
             if "Bubblesort" in j[1]:
-                result["algorithms"]["bubblesort"][j[0]].append(measure_real_time(j, str(numbers)))
+                result["algorithms"]["Bubble sort"][j[0]].append(measure_real_time(j, str(numbers)))
             elif "Quicksort" in j[1]:
-                result["algorithms"]["quicksort"][j[0]].append(measure_real_time(j, str(numbers)))
+                result["algorithms"]["Quicksort"][j[0]].append(measure_real_time(j, str(numbers)))
             elif "Selectionsort" in j[1]:
-                result["algorithms"]["selectionsort"][j[0]].append(measure_real_time(j, str(numbers)))
+                result["algorithms"]["Selection sort"][j[0]].append(measure_real_time(j, str(numbers)))
 
     elapsed_time = time.time()
     runtime = elapsed_time - start_time
 
     write_result_to_file(result, init_timedate)
     make_result_plot(result, args.n, args.k, init_timedate)
-    tqdm.write("Done. It took " + time.strftime("%Mm:%Ss", time.gmtime(runtime)) + ". A benchmark plot was saved in the program directory.")
+    tqdm.write("Done. It took " + time.strftime("%Mm:%Ss", time.gmtime(runtime)) +
+               ". A benchmark plot was saved in the program directory.")
 
 if __name__ == "__main__":
     main() 
