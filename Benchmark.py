@@ -26,14 +26,16 @@ def generate_data(n):
 
 def run_code(file, input):
     if file[0] == "Java":
-        subprocess.run(["java", "-cp", "build/java", file[1]], input=input, 
-                       capture_output=True, text=True)
+        p = subprocess.Popen(["java", "-cp", "build/java", file[1]], stdin=subprocess.PIPE, 
+                       stdout=subprocess.PIPE, text=True)
     elif file[0] == "Python":
-        subprocess.run(["python3", "src/python/" + file[1]], input=input, 
-                       capture_output=True, text=True)
+        p = subprocess.Popen(["python3", "src/python/" + file[1]], stdin=subprocess.PIPE, 
+                       stdout=subprocess.PIPE, text=True)
     elif file[0] == "C":
-        subprocess.run(["build/c/" + file[1]], input=input, 
-                       capture_output=True, text=True)
+        p = subprocess.Popen(["build/c/" + file[1]], stdin=subprocess.PIPE, 
+                       stdout=subprocess.PIPE, text=True)
+    
+    output, errors = p.communicate(input)
 
 def measure_real_time(file, input):
     start_time = time.time()
@@ -88,9 +90,9 @@ def main():
 
     print("Getting CPU information...")
 
-    queue = [("C", "Bubblesort"), ("Java", "Bubblesort.class"), ("Python", "Bubblesort.py"),
-             ("C", "Quicksort"), ("Java", "Quicksort.class"), ("Python", "Quicksort.py"),
-             ("C", "Selectionsort"), ("Java", "Selectionsort.class"), ("Python", "Selectionsort.py",)]
+    queue = [("C", "Bubblesort"), ("Java", "Bubblesort"), ("Python", "Bubblesort.py"),
+             ("C", "Quicksort"), ("Java", "Quicksort"), ("Python", "Quicksort.py"),
+             ("C", "Selectionsort"), ("Java", "Selectionsort"), ("Python", "Selectionsort.py",)]
 
     result = {"algorithms": {"Bubble sort": {"C": [], "Java": [], "Python": []},
                              "Quicksort": {"C": [], "Java": [], "Python": []},
