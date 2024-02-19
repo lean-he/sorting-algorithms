@@ -88,9 +88,9 @@ def main():
 
     print("Getting CPU information...")
 
-    queue = [("C", "Bubblesort"), ("Java", "Bubblesort.class"), ("Python", "Bubblesort.py"),
-             ("C", "Quicksort"), ("Java", "Quicksort.class"), ("Python", "Quicksort.py"),
-             ("C", "Selectionsort"), ("Java", "Selectionsort.class"), ("Python", "Selectionsort.py",)]
+    queue = [("C", "Bubblesort"), ("Java", "Bubblesort"), ("Python", "Bubblesort.py"),
+             ("C", "Quicksort"), ("Java", "Quicksort"), ("Python", "Quicksort.py"),
+             ("C", "Selectionsort"), ("Java", "Selectionsort"), ("Python", "Selectionsort.py",)]
 
     result = {"algorithms": {"Bubble sort": {"C": [], "Java": [], "Python": []},
                              "Quicksort": {"C": [], "Java": [], "Python": []},
